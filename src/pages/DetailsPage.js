@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import useFetchDetails from "../hooks/useFetchDataDetails";
 import { useSelector } from "react-redux";
@@ -7,6 +7,8 @@ import Divider from "../component/Divider";
 import useFetch from "../hooks/useFetch";
 import HorizontalScrollCard from "../component/HorizontalScrollCard";
 import axios from "axios";
+import VideoPlay from "../component/VideoPlay";
+
 const DetailsPage = () => {
   const param = useParams();
   const imageURL = useSelector((state) => state.movie.imageURL);
@@ -20,12 +22,18 @@ const DetailsPage = () => {
   const { data: recommendationData } = useFetch(
     `${param?.explore}/${param?.id}/recommendations`
   );
+  const [playVideo, setPlayVideo] = useState(false);
+  const [playVideoId, setPlayVideoId] = useState("");
   const duration = (Number(data?.runtime) / 60).toFixed(1).split(".");
   const writer = castData?.crew
     ?.filter((el) => el?.job === "Writer")
     .map((el) => el?.name)
     ?.join(",");
 
+  const handlePlayVideo = (data) => {
+    setPlayVideoId(data?.id);
+    setPlayVideo(true);
+  };
   return (
     <div>
       <div className="w-full h-[280px] relative hidden lg:block">
@@ -38,11 +46,17 @@ const DetailsPage = () => {
         <div className="absolute bg-gradient-to-t from-neutral-900/90 to-transparent w-full h-full top-0"></div>
       </div>
       <div className="container mx-auto px-3 py-16 lg:py-0 flex flex-col lg:flex-row gap-5 lg:gap-10">
-        <div className=" relative mx-auto lg:-mt-28  lg:mx-0 w-fit">
+        <div className=" relative mx-auto lg:-mt-28  lg:mx-0 min-w-fit">
           <img
             src={imageURL + data?.poster_path}
             className="h-80 w-60 object-center rounded"
           />
+          <button
+            onClick={() => handlePlayVideo()}
+            className="mt-5 w-full py-2 px-4 text-center bg-white text-black rounded font-bold text-lg hover:bg-gradient-to-l from-red-500 to-orange-400 hover:scale-105 transition-all"
+          >
+            Play Now
+          </button>
         </div>
         <div>
           <h2 className=" text-2xl font-bold text-white">
@@ -120,6 +134,13 @@ const DetailsPage = () => {
           media_type={param?.explore}
         />
       </div>
+      {playVideo && (
+        <VideoPlay
+          data={playVideoId}
+          close={() => setPlayVideo(false)}
+          media_type={param?.explore}
+        />
+      )}
     </div>
   );
 };
